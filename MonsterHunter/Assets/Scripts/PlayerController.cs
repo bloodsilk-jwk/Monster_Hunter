@@ -1,30 +1,35 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
     // 이동 속도
     private float MoveSpeed = 5f;
     // 점프력
-    private float JumpPower = 500f;
+    private float JumpPower = 350f;
     // 점프 횟수
     private int JumpCount = 0;
 
     // Rigidbody2D 받아오기
-    Rigidbody2D PlayerRigidbody;
+    private Rigidbody2D PlayerRigidbody;
 
     // Animator 받아오기
-    Animator PlayerAnimator;
+    private Animator PlayerAnimator;
+
+    private SpriteRenderer Renderer;
 
     // 땅에 닿았는지 확인
-    private bool ifLanded;
+    public bool ifLanded;
+
 
     // Start is called before the first frame update
     void Start()
     {
         PlayerRigidbody = GetComponent<Rigidbody2D>();
         PlayerAnimator = GetComponent<Animator>();
+        Renderer = GetComponentInChildren<SpriteRenderer>();
     }
 
     // Update is called once per frame
@@ -38,7 +43,27 @@ public class PlayerController : MonoBehaviour
     {
         float MoveInput = Input.GetAxis("Horizontal");
         Vector3 MoveDirection = new Vector3(MoveInput, 0, 0);
+
+        if(MoveInput != 0 && JumpCount == 0)
+        {
+            PlayerAnimator.SetBool("ToWalk", true);
+
+            if (MoveInput > 0)
+            {
+                Renderer.flipX = false;
+            }
+            else if (MoveInput < 0)
+            {
+                Renderer.flipX = true;
+            }
+        }
+        else
+        {
+            PlayerAnimator.SetBool("ToWalk", false);
+        }
+
         transform.position += MoveDirection * MoveSpeed * Time.deltaTime;
+
     }
 
     void Jump()
@@ -54,6 +79,8 @@ public class PlayerController : MonoBehaviour
 
             // 위쪽으로 힘주기
             PlayerRigidbody.AddForce(new Vector3(0, JumpPower, 0));
+
+            PlayerAnimator.SetTrigger("Jump");
         }
         //  Space바에 손을 떼고, 세로 속도가 0보다 크다면 (위로 점프를 했다면)
         else if(Input.GetKeyUp(KeyCode.Space) && PlayerRigidbody.velocity.y > 0)
@@ -61,7 +88,6 @@ public class PlayerController : MonoBehaviour
             // 작게 점프
             PlayerRigidbody.velocity *= 0.5f;
         }
-        PlayerAnimator.SetBool("ifLanded", ifLanded);
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -69,13 +95,7 @@ public class PlayerController : MonoBehaviour
         
         if(collision.gameObject.tag == ("Ground"))
         {
-            ifLanded = true;
             JumpCount = 0;
         }
-    }
-
-    private void OnCollisionExit2D(Collision2D collision)
-    {
-        ifLanded = false;
     }
 }
