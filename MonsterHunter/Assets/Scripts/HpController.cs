@@ -15,6 +15,8 @@ public class HpController : MonoBehaviour
 
     public float CurrentHp;
 
+    public PlayerController PController;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -29,5 +31,20 @@ public class HpController : MonoBehaviour
         HpSlider.value = CurrentHp / MaxHp;
 
         HpText.text = CurrentHp + " / " + MaxHp;
+
+        if (CurrentHp >= 100)
+        {
+            CurrentHp = 100;
+        }
+
+        if (CurrentHp <= 0)
+        {
+            CurrentHp = 0;
+
+            if(PController.ifDead == false)
+            {
+                PController.Die();
+            }
+        }
     }
 }

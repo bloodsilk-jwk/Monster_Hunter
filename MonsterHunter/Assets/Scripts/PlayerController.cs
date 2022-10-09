@@ -18,11 +18,14 @@ public class PlayerController : MonoBehaviour
     // Animator 받아오기
     private Animator PlayerAnimator;
 
-    private SpriteRenderer Renderer;
+    public SpriteRenderer Renderer;
 
     // 땅에 닿았는지 확인
     public bool ifLanded;
 
+    public bool ifDead;
+
+    public HpController HPCon;
 
     // Start is called before the first frame update
     void Start()
@@ -30,11 +33,18 @@ public class PlayerController : MonoBehaviour
         PlayerRigidbody = GetComponent<Rigidbody2D>();
         PlayerAnimator = GetComponent<Animator>();
         Renderer = GetComponentInChildren<SpriteRenderer>();
+
+        ifDead = false;
     }
 
     // Update is called once per frame
     void Update()
     {
+        if(ifDead)
+        {
+            return;
+        }
+
         Move();
         Jump();
     }
@@ -97,5 +107,31 @@ public class PlayerController : MonoBehaviour
         {
             JumpCount = 0;
         }
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.gameObject.tag == ("DeadZone") && !ifDead)
+        {
+            HPCon.CurrentHp = 0f;
+            Die();
+        }
+        if (collision.gameObject.tag == ("Attack"))
+        {
+            HPCon.CurrentHp -= 35f;
+        }
+        if (collision.gameObject.tag == ("Potion"))
+        {
+            HPCon.CurrentHp += 20;
+        }
+    }
+
+    public void Die()
+    {
+        PlayerAnimator.SetTrigger("Die");
+
+        PlayerRigidbody.velocity = Vector3.zero;
+
+        ifDead = true;
     }
 }
